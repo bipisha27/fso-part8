@@ -1,8 +1,52 @@
-const Authors = (props) => {
-  if (!props.show) {
-    return null
+import { useQuery, useMutation } from "@apollo/client/react";
+import { ALL_AUTHORS, EDIT_AUTHOR } from "./queries";
+import { useState, useEffect } from "react";
+
+const authors = result.data.allAuthors;
+
+useEffect(() => {
+  if (authors.length > 0 && name === "") {
+    setName(authors[0].name);
   }
-  const authors = []
+}, [authors, name]);
+
+// useEffect runs after every render when `authors` or `name` changes.
+// if the authors have been loaded and no author is currently selected,
+// it automatically selects the first author so the dropdown and the
+// react state stays synchronized.
+
+const Authors = ({ show }) => {
+  const [name, setName] = useState("");
+  const [born, setBorn] = useState("");
+
+  const result = useQuery(ALL_AUTHORS);
+
+  const [editAuthor] = useMutation(EDIT_AUTHOR, {
+    refetchQueries: [{ query: ALL_AUTHORS }],
+  });
+
+  if (result.loading) {
+    return <div>loading...</div>;
+  }
+
+  const submit = async (event) => {
+    event.preventDefault();
+
+    console.log("Submitting:", {
+      name,
+      born,
+      setBornTo: Number(born),
+    });
+
+    const result = await editAuthor({
+      variables: {
+        name,
+        setBornTo: Number(born),
+      },
+    });
+    setBorn("");
+    console.log(result);
+  };
 
   return (
     <div>
@@ -15,7 +59,7 @@ const Authors = (props) => {
             <th>books</th>
           </tr>
           {authors.map((a) => (
-            <tr key={a.id}>
+            <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>
               <td>{a.bookCount}</td>
@@ -23,8 +67,32 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-    </div>
-  )
-}
 
-export default Authors
+      <h3>Set Birthyear</h3>
+
+      <form onSubmit={submit}>
+        <div>
+          <select value={name} onChange={({ target }) => setName(target.value)}>
+            {authors.map((author) => (
+              <option key={author.name} value={author.name}>
+                {author.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          born
+          <input
+            type="number"
+            value={born}
+            onChange={({ target }) => setBorn(target.value)}
+          />
+        </div>
+        <button type="submit">update author</button>
+      </form>
+    </div>
+  );
+};
+
+export default Authors;

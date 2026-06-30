@@ -84,7 +84,7 @@ const typeDefs = `#graphql
   type Book{
     title: String!
     author: String!
-    published: String!
+    published: Int!
     id: ID!
     genres: [String!]!
   }
@@ -170,8 +170,10 @@ const resolvers = {
       const updatedAuthor = { ...author, born: args.setBornTo };
       authors = authors.map((a) => (a.name === args.name ? updatedAuthor : a));
 
+
       return updatedAuthor;
     },
+
   },
 };
 
