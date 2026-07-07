@@ -1,32 +1,26 @@
 import { useQuery } from "@apollo/client/react";
-import { ALL_BOOKS, ME } from "./queries";
+import { ALL_BOOKS } from "./queries";
 
-const Recommendations = ({ show }) => {
+const Recommendations = ({ show, favoriteGenre }) => {
   const bookResult = useQuery(ALL_BOOKS);
-  const userResult = useQuery(ME);
 
-  if (!show) {
-    return null;
-  }
+  if (!show) return null;
 
-  if (bookResult.loading || userResult.loading) {
-    return <div>loading...</div>;
-  }
+  if (bookResult.loading) return <div>loading...</div>;
+
+  if (!favoriteGenre) return <div>please log in</div>;
 
   const books = bookResult.data.allBooks;
-  const favoriteGenre = userResult.data.me.favoriteGenre;
-
   const recommendedBooks = books.filter((book) =>
     book.genres.includes(favoriteGenre),
   );
 
   return (
     <div>
-      <h2>books</h2>
+      <h2>recommendations</h2>
       <p>
-        Books in your favorite genre <strong>{favoriteGenre}</strong>
+        books in your favorite genre <strong>{favoriteGenre}</strong>
       </p>
-
       <table>
         <tbody>
           <tr>

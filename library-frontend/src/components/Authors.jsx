@@ -61,10 +61,11 @@ const Authors = ({ show, token }) => {
       </table>
       {token && (
         <>
-          <h3>Set Birthyear</h3>
+          <h3>Set birthyear</h3>
           <form onSubmit={submit}>
             <div>
               <select
+                name="name"
                 value={name}
                 onChange={({ target }) => setName(target.value)}
               >
@@ -76,8 +77,9 @@ const Authors = ({ show, token }) => {
               </select>
             </div>
             <div>
-              born
+              <label htmlFor="born">born</label>
               <input
+                id="born"
                 type="number"
                 value={born}
                 onChange={({ target }) => setBorn(target.value)}

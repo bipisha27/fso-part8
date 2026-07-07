@@ -1,31 +1,49 @@
 import { useQuery } from "@apollo/client/react";
-import { ALL_BOOKS } from "./queries";
+import { ALL_BOOKS, ALL_BOOKS_BY_GENRE } from "./queries";
 import { useState } from "react";
 
 const Books = ({ show }) => {
-  const [selectedGenre, setSelectedGenre] = useState("all");
-  const result = useQuery(ALL_BOOKS);
+  const [selectedGenre, setSelectedGenre] = useState(null);
+
+  const allBooksResult = useQuery(ALL_BOOKS);
+
+  const filteredResult = useQuery(ALL_BOOKS_BY_GENRE, {
+    variables: { genre: selectedGenre },
+    skip: !selectedGenre,
+    fetchPolicy: "network-only",
+  });
 
   if (!show) {
     return null;
   }
 
-  if (result.loading) {
+  if (allBooksResult.loading) {
     return <div>loading...</div>;
   }
 
-  const books = result.data.allBooks;
+  // const books = result.data.allBooks;
+  // const filteredBooks =
+  // selectedGenre === "all"
+  // ? books
+  // : books.filter((book) => book.genres.includes(selectedGenre));
+  // const genres = [...new Set(books.flatMap((book) => book.genres))];
 
-  const filteredBooks =
-    selectedGenre === "all"
-      ? books
-      : books.filter((book) => book.genres.includes(selectedGenre));
+  const books = allBooksResult.data.allBooks;
+  const genres = [...new Set(books.flatMap((book) => book.genres))]; //Set removes duplicates from the array, spread operator converts Set back into plain array
 
-  const genres = [...new Set(books.flatMap((book) => book.genres))];
+  const filteredBooks = selectedGenre
+    ? (filteredResult.data?.allBooks ?? [])
+    : books; //?. is used when query is still loading and data is undefined
 
   return (
     <div>
       <h2>books</h2>
+
+      {selectedGenre && (
+        <p>
+          in genre <strong>{selectedGenre}</strong>
+        </p>
+      )}
 
       <table>
         <tbody>
@@ -50,7 +68,7 @@ const Books = ({ show }) => {
         </button>
       ))}
 
-      <button onClick={() => setSelectedGenre("all")}>all genres</button>
+      <button onClick={() => setSelectedGenre(null)}>all genres</button>
     </div>
   );
 };
